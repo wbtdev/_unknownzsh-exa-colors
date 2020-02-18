@@ -1,26 +1,69 @@
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+if (( ! $+commands[exa] )); then
+  echo "exa is not installed. Please install with Homebrew or Cargo."
+  return 1
+fi
 
-# Copyright (c) 2020 Brad Thorne
-
-# According to the Zsh Plugin Standard:
-# http://zdharma.org/Zsh-100-Commits-Club/Zsh-Plugin-Standard.html
-
-0=${${ZERO:-${0:#$ZSH_ARGZERO}}:-${(%):-%N}}
-0=${${(M)0:#/*}:-$PWD/$0}
-
-# Then ${0:h} to get plugin's directory
-
-if [[ ${zsh_loaded_plugins[-1]} != */zsh-exa-colors && -z ${fpath[(r)${0:h}]} ]] {
-    fpath+=( "${0:h}" )
+exals() {
+  ls=exa
+  if [[ ! -d .git || "$PWD" = "$HOME" ]]; then
+      # Normal
+      $ls "$@"
+      return
+  fi
+  $ls --git "$@"
 }
 
-# Standard hash for plugins, to not pollute the namespace
-typeset -gA Plugins
-Plugins[ZSH_EXA_COLORS_DIR]="${0:h}"
+ls=exals
 
-autoload -Uz example-script
-
-# Use alternate vim marks [[[ and ]]] as the original ones can
-# confuse nested substitutions, e.g.: ${${${VAR}}}
-
-# vim:ft=zsh:tw=80:sw=4:sts=4:et:foldmarker=[[[,]]]
+alias ls="$ls"
+# Order by modified, show group and links
+alias l="$ls -a -lgmH"
+# Include extended info
+alias la="l -@"
+# Include the header
+alias ll="l -h"
+# 1 per line, dirs first
+alias l1="$ls -1 --group-directories-first"
+# Include dotfiles
+alias la1="l1 -a"
+# Only show dot-directories
+alias lad="$ls -Dl .*"
+# Only show dot-files
+alias lsa="$ls -al .*(.)"
+# Sort by extension
+alias le="$ls -a -lgH -s extension --group-directories-first"
+# Sort by modified, show modified time
+alias lm="$ls -a -lghH -s modified -m"
+# Sort by modified, show accessed and created times
+alias lu="$ls -a -lghH -s modified -uU"
+# Tree view
+alias lt="$ls -T"
+# Tree view with recursion
+alias llt="$ls -a -lgHh -R -T"
+alias tree="llt"
+# Recursion limited to two levels
+alias lr="$ls -a -lgHh -R -L 2"
+# Recursion, no limit
+alias lrr="$ls -a -lgHh -R"
+# Only show symlinks
+alias lsl="$ls -a -lh *(N@)"
+# Display only executables
+alias lsx="$ls -a -lh *(*)"
+# Display world-{readable,writable,executable} files
+alias lsw="$ls -a -ldh *(R,W,X.^ND/)"
+# Display the ten biggest files
+alias lsbig="$ls -a -lh *(.OL[1,10])"
+# Only show directories
+alias lsd="$ls -a -D"
+# Only show empty directories
+alias lse="$ls -a -dD *(/^F)"
+# Display the ten newest files
+alias lsnew="$ls -a -lh *(D.om[1,10])"
+# Display the ten oldest files
+alias lsold="$ls -a -lh *(D.Om[1,10])"
+# Display the ten smallest files
+alias lssmall="$ls -a -rlh -s=size *(.oL[1,10])"
+# Display the ten newest directories and ten newest .directories
+alias lsnewdir="$ls -a -hdDl *(/om[1,10]) .*(D/om[1,10])"
+# Display the ten oldest directories and ten oldest .directories
+alias lsolddir="$ls -a -hdDl *(/Om[1,10]) .*(D/Om[1,10])"
